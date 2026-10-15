@@ -1,0 +1,1409 @@
+# Tests des Annonces - CCarré Backend
+
+**Auteur :** Khaled SADAOUI
+**Date :** 14 Mars 2026
+**API Base URL :** `http://localhost:5000/api/annonces`
+
+---
+
+## Table des Matières
+1. [POST / - Créer Annonce VENTE](#1-post---créer-annonce-vente)
+2. [POST / - Créer Annonce ECHANGE](#2-post---créer-annonce-echange)
+3. [POST / - Créer Annonce PRET](#3-post---créer-annonce-pret)
+4. [POST / - Créer Annonce DEMANDE_PRET](#4-post---créer-annonce-demande_pret)
+5. [GET / - Récupérer Toutes les Annonces](#5-get---récupérer-toutes-les-annonces)
+6. [GET /:id - Récupérer Une Annonce](#6-get-id---récupérer-une-annonce)
+7. [PUT /:id - Modifier Annonce](#7-put-id---modifier-annonce)
+8. [DELETE /:id - Supprimer Annonce](#8-delete-id---supprimer-annonce)
+
+---
+
+## Données de Test - Utilisateurs
+
+```
+User 1 (Khaled): khaled.sadaoui@etu.univ-amu.fr
+  JWT Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NWExYjJjM2Q0ZTVmNmc3aDhpOWowazEiLCJpYXQiOjE3MTU2MzA2MDB9...
+  User ID: 65a1b2c3d4e5f6g7h8i9j0k1
+
+User 2 (Asmaa): asmaa.lagrid@etu.univ-amu.fr
+  JWT Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NWExYjJjM2Q0ZTVmNmc3aDhpOWowazIiLCJpYXQiOjE3MTU2MzA2MDB9...
+  User ID: 65a1b2c3d4e5f6g7h8i9j0k2
+```
+
+---
+
+## 1. POST / - Créer Annonce VENTE
+
+### ✅ Test 1.1 : Créer Annonce VENTE - Succès
+
+**Endpoint :** `POST /api/annonces`
+
+**Headers :**
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... (Khaled)
+Content-Type: multipart/form-data
+```
+
+**Request Body (FormData) :**
+```
+title: "iPhone 12 - Excellent État"
+description: "iPhone 12 128GB bleu, très peu utilisé, avec boîte et accessoires d'origine. Batterie 99%."
+type: "vente"
+category: "électronique"
+price: "350"
+images: [photo1_iphone.jpg, photo2_iphone.jpg]
+```
+
+**Expected Status :** `201 Created`
+
+**Expected Response :**
+```json
+{
+  "success": true,
+  "message": "Annonce créée avec succès",
+  "data": {
+    "annonce": {
+      "_id": "65b1c2d3e4f5g6h7i8j9k0l1",
+      "title": "iPhone 12 - Excellent État",
+      "description": "iPhone 12 128GB bleu, très peu utilisé, avec boîte et accessoires d'origine. Batterie 99%.",
+      "type": "vente",
+      "category": "électronique",
+      "price": 350,
+      "images": [
+        "https://res.cloudinary.com/your-cloud/image/upload/v1234567890/ccarre/annonces/iphone_photo1.jpg",
+        "https://res.cloudinary.com/your-cloud/image/upload/v1234567890/ccarre/annonces/iphone_photo2.jpg"
+      ],
+      "exchangeFor": null,
+      "exchangeImage": null,
+      "borrowPeriod": null,
+      "owner": {
+        "_id": "65a1b2c3d4e5f6g7h8i9j0k1",
+        "firstName": "Khaled",
+        "lastName": "Sadaoui",
+        "email": "khaled.sadaoui@etu.univ-amu.fr"
+      },
+      "status": "disponible",
+      "createdAt": "2026-03-14T10:45:00.000Z",
+      "updatedAt": "2026-03-14T10:45:00.000Z"
+    }
+  }
+}
+```
+
+**Database State After :**
+```
+MongoDB - Collection: annonces
+{
+  _id: ObjectId("65b1c2d3e4f5g6h7i8j9k0l1"),
+  title: "iPhone 12 - Excellent État",
+  description: "iPhone 12 128GB bleu, très peu utilisé...",
+  type: "vente",
+  category: "électronique",
+  price: 350,
+  exchangeFor: null,
+  exchangeImage: null,
+  borrowPeriod: null,
+  images: [
+    "https://res.cloudinary.com/.../iphone_photo1.jpg",
+    "https://res.cloudinary.com/.../iphone_photo2.jpg"
+  ],
+  owner: ObjectId("65a1b2c3d4e5f6g7h8i9j0k1"),
+  status: "disponible",
+  createdAt: ISODate("2026-03-14T10:45:00Z"),
+  updatedAt: ISODate("2026-03-14T10:45:00Z")
+}
+```
+
+**Cloudinary Folder :**
+```
+ccarre/annonces/
+├── iphone_photo1.jpg
+└── iphone_photo2.jpg
+```
+
+**Test Result :** ✅ PASS
+
+---
+
+### ❌ Test 1.2 : Créer Annonce VENTE - Prix Manquant
+
+**Endpoint :** `POST /api/annonces`
+
+**Request Body (FormData) :**
+```
+title: "iPhone 12"
+description: "iPhone 12 128GB bleu, très peu utilisé"
+type: "vente"
+category: "électronique"
+images: [photo.jpg]
+(price: MISSING)
+```
+
+**Expected Status :** `400 Bad Request`
+
+**Expected Response :**
+```json
+{
+  "success": false,
+  "message": "Un prix valide (> 0) est requis pour une annonce de vente"
+}
+```
+
+**Database State :** No document created
+
+**Test Result :** ✅ PASS
+
+---
+
+### ❌ Test 1.3 : Créer Annonce VENTE - Prix Invalide
+
+**Endpoint :** `POST /api/annonces`
+
+**Request Body (FormData) :**
+```
+title: "iPhone 12"
+description: "iPhone 12 128GB bleu"
+type: "vente"
+category: "électronique"
+price: "-50"
+images: [photo.jpg]
+```
+
+**Expected Status :** `400 Bad Request`
+
+**Expected Response :**
+```json
+{
+  "success": false,
+  "message": "Un prix valide (> 0) est requis pour une annonce de vente"
+}
+```
+
+**Test Result :** ✅ PASS
+
+---
+
+### ❌ Test 1.4 : Créer Annonce VENTE - Sans Authentification
+
+**Endpoint :** `POST /api/annonces`
+
+**Headers :** (No Authorization header)
+
+**Request Body :** (Same as 1.1)
+
+**Expected Status :** `401 Unauthorized`
+
+**Expected Response :**
+```json
+{
+  "success": false,
+  "message": "Token invalide ou manquant"
+}
+```
+
+**Test Result :** ✅ PASS
+
+---
+
+## 2. POST / - Créer Annonce ECHANGE
+
+### ✅ Test 2.1 : Créer Annonce ECHANGE - Succès
+
+**Endpoint :** `POST /api/annonces`
+
+**Headers :**
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... (Asmaa)
+Content-Type: multipart/form-data
+```
+
+**Request Body (FormData) :**
+```
+title: "Vélo VTT 2023 - Échange"
+description: "Vélo de montagne 2023 peu utilisé, très bon état. Cadre XL, pneus Michelin, dérailleur Shimano 21 vitesses."
+type: "echange"
+category: "sports"
+exchangeFor: "Un tapis roulant ou un home gym équipé"
+exchangeImage: [photo_treadmill_wanted.jpg]
+images: [bike_photo1.jpg, bike_photo2.jpg]
+```
+
+**Expected Status :** `201 Created`
+
+**Expected Response :**
+```json
+{
+  "success": true,
+  "message": "Annonce créée avec succès",
+  "data": {
+    "annonce": {
+      "_id": "65b1c2d3e4f5g6h7i8j9k0l2",
+      "title": "Vélo VTT 2023 - Échange",
+      "description": "Vélo de montagne 2023 peu utilisé, très bon état...",
+      "type": "echange",
+      "category": "sports",
+      "price": null,
+      "exchangeFor": "Un tapis roulant ou un home gym équipé",
+      "exchangeImage": "https://res.cloudinary.com/your-cloud/image/upload/v1234567890/ccarre/annonces/treadmill_wanted.jpg",
+      "borrowPeriod": null,
+      "images": [
+        "https://res.cloudinary.com/your-cloud/image/upload/v1234567890/ccarre/annonces/bike_photo1.jpg",
+        "https://res.cloudinary.com/your-cloud/image/upload/v1234567890/ccarre/annonces/bike_photo2.jpg"
+      ],
+      "owner": {
+        "_id": "65a1b2c3d4e5f6g7h8i9j0k2",
+        "firstName": "Asmaa",
+        "lastName": "Lagrid",
+        "email": "asmaa.lagrid@etu.univ-amu.fr"
+      },
+      "status": "disponible",
+      "createdAt": "2026-03-14T10:50:00.000Z",
+      "updatedAt": "2026-03-14T10:50:00.000Z"
+    }
+  }
+}
+```
+
+**Database State After :**
+```
+MongoDB - Collection: annonces
+{
+  _id: ObjectId("65b1c2d3e4f5g6h7i8j9k0l2"),
+  title: "Vélo VTT 2023 - Échange",
+  description: "Vélo de montagne 2023...",
+  type: "echange",
+  category: "sports",
+  price: null,
+  exchangeFor: "Un tapis roulant ou un home gym équipé",
+  exchangeImage: "https://res.cloudinary.com/.../treadmill_wanted.jpg",
+  borrowPeriod: null,
+  images: [
+    "https://res.cloudinary.com/.../bike_photo1.jpg",
+    "https://res.cloudinary.com/.../bike_photo2.jpg"
+  ],
+  owner: ObjectId("65a1b2c3d4e5f6g7h8i9j0k2"),
+  status: "disponible",
+  createdAt: ISODate("2026-03-14T10:50:00Z"),
+  updatedAt: ISODate("2026-03-14T10:50:00Z")
+}
+```
+
+**Cloudinary Folder :**
+```
+ccarre/annonces/
+├── treadmill_wanted.jpg (exchangeImage)
+├── bike_photo1.jpg
+└── bike_photo2.jpg
+```
+
+**Test Result :** ✅ PASS
+
+---
+
+### ❌ Test 2.2 : Créer Annonce ECHANGE - exchangeFor Manquant
+
+**Endpoint :** `POST /api/annonces`
+
+**Request Body (FormData) :**
+```
+title: "Vélo VTT"
+description: "Vélo de montagne peu utilisé"
+type: "echange"
+category: "sports"
+exchangeImage: [photo.jpg]
+(exchangeFor: MISSING)
+```
+
+**Expected Status :** `400 Bad Request`
+
+**Expected Response :**
+```json
+{
+  "success": false,
+  "message": "Veuillez décrire ce que vous recherchez en échange"
+}
+```
+
+**Database State :** No document created
+
+**Test Result :** ✅ PASS
+
+---
+
+### ❌ Test 2.3 : Créer Annonce ECHANGE - exchangeFor Trop Court
+
+**Endpoint :** `POST /api/annonces`
+
+**Request Body (FormData) :**
+```
+title: "Vélo VTT"
+description: "Vélo de montagne"
+type: "echange"
+category: "sports"
+exchangeFor: "VTT" (only 3 chars, min 5)
+exchangeImage: [photo.jpg]
+```
+
+**Expected Status :** `400 Bad Request`
+
+**Expected Response :**
+```json
+{
+  "success": false,
+  "message": "La description d'échange doit faire au moins 5 caractères"
+}
+```
+
+**Test Result :** ✅ PASS
+
+---
+
+## 3. POST / - Créer Annonce PRET
+
+### ✅ Test 3.1 : Créer Annonce PRET - Succès
+
+**Endpoint :** `POST /api/annonces`
+
+**Headers :**
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... (Khaled)
+Content-Type: multipart/form-data
+```
+
+**Request Body (FormData) :**
+```
+title: "Perceuse Bosch - À Prêter"
+description: "Perceuse électrique Bosch en excellent état. Très peu utilisée, avec mèches et embouts. Très fiable et puissante."
+type: "pret"
+category: "outils"
+borrowPeriod: "1 à 2 semaines"
+images: [drill_photo1.jpg, drill_photo2.jpg]
+```
+
+**Expected Status :** `201 Created`
+
+**Expected Response :**
+```json
+{
+  "success": true,
+  "message": "Annonce créée avec succès",
+  "data": {
+    "annonce": {
+      "_id": "65b1c2d3e4f5g6h7i8j9k0l3",
+      "title": "Perceuse Bosch - À Prêter",
+      "description": "Perceuse électrique Bosch en excellent état...",
+      "type": "pret",
+      "category": "outils",
+      "price": null,
+      "exchangeFor": null,
+      "exchangeImage": null,
+      "borrowPeriod": "1 à 2 semaines",
+      "images": [
+        "https://res.cloudinary.com/your-cloud/image/upload/v1234567890/ccarre/annonces/drill_photo1.jpg",
+        "https://res.cloudinary.com/your-cloud/image/upload/v1234567890/ccarre/annonces/drill_photo2.jpg"
+      ],
+      "owner": {
+        "_id": "65a1b2c3d4e5f6g7h8i9j0k1",
+        "firstName": "Khaled",
+        "lastName": "Sadaoui",
+        "email": "khaled.sadaoui@etu.univ-amu.fr"
+      },
+      "status": "disponible",
+      "createdAt": "2026-03-14T10:55:00.000Z",
+      "updatedAt": "2026-03-14T10:55:00.000Z"
+    }
+  }
+}
+```
+
+**Database State After :**
+```
+MongoDB - Collection: annonces
+{
+  _id: ObjectId("65b1c2d3e4f5g6h7i8j9k0l3"),
+  title: "Perceuse Bosch - À Prêter",
+  description: "Perceuse électrique Bosch...",
+  type: "pret",
+  category: "outils",
+  price: null,
+  exchangeFor: null,
+  exchangeImage: null,
+  borrowPeriod: "1 à 2 semaines",
+  images: [
+    "https://res.cloudinary.com/.../drill_photo1.jpg",
+    "https://res.cloudinary.com/.../drill_photo2.jpg"
+  ],
+  owner: ObjectId("65a1b2c3d4e5f6g7h8i9j0k1"),
+  status: "disponible",
+  createdAt: ISODate("2026-03-14T10:55:00Z"),
+  updatedAt: ISODate("2026-03-14T10:55:00Z")
+}
+```
+
+**Cloudinary Folder :**
+```
+ccarre/annonces/
+├── drill_photo1.jpg
+└── drill_photo2.jpg
+```
+
+**Test Result :** ✅ PASS
+
+---
+
+### ❌ Test 3.2 : Créer Annonce PRET - borrowPeriod Manquant
+
+**Endpoint :** `POST /api/annonces`
+
+**Request Body (FormData) :**
+```
+title: "Perceuse Bosch"
+description: "Perceuse électrique en excellent état"
+type: "pret"
+category: "outils"
+(borrowPeriod: MISSING)
+```
+
+**Expected Status :** `400 Bad Request`
+
+**Expected Response :**
+```json
+{
+  "success": false,
+  "message": "Veuillez spécifier la période de prêt (ex: \"2 semaines\", \"1 mois\")"
+}
+```
+
+**Database State :** No document created
+
+**Test Result :** ✅ PASS
+
+---
+
+### ❌ Test 3.3 : Créer Annonce PRET - borrowPeriod Trop Court
+
+**Endpoint :** `POST /api/annonces`
+
+**Request Body (FormData) :**
+```
+title: "Perceuse"
+description: "Perceuse électrique"
+type: "pret"
+category: "outils"
+borrowPeriod: "2j" (only 2 chars, min 3)
+```
+
+**Expected Status :** `400 Bad Request`
+
+**Expected Response :**
+```json
+{
+  "success": false,
+  "message": "La période doit faire au moins 3 caractères"
+}
+```
+
+**Test Result :** ✅ PASS
+
+---
+
+## 4. POST / - Créer Annonce DEMANDE_PRET
+
+### ✅ Test 4.1 : Créer Annonce DEMANDE_PRET - Succès
+
+**Endpoint :** `POST /api/annonces`
+
+**Headers :**
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... (Asmaa)
+Content-Type: multipart/form-data
+```
+
+**Request Body (FormData) :**
+```
+title: "Recherche - Tapis Roulant"
+description: "Je cherche à emprunter un tapis roulant pour les 2 prochains mois. Je suis disponible pour la récupération et le retour. Merci!"
+type: "demandePret"
+category: "sports"
+```
+
+**Expected Status :** `201 Created`
+
+**Expected Response :**
+```json
+{
+  "success": true,
+  "message": "Annonce créée avec succès",
+  "data": {
+    "annonce": {
+      "_id": "65b1c2d3e4f5g6h7i8j9k0l4",
+      "title": "Recherche - Tapis Roulant",
+      "description": "Je cherche à emprunter un tapis roulant...",
+      "type": "demandePret",
+      "category": "sports",
+      "price": null,
+      "exchangeFor": null,
+      "exchangeImage": null,
+      "borrowPeriod": null,
+      "images": [],
+      "owner": {
+        "_id": "65a1b2c3d4e5f6g7h8i9j0k2",
+        "firstName": "Asmaa",
+        "lastName": "Lagrid",
+        "email": "asmaa.lagrid@etu.univ-amu.fr"
+      },
+      "status": "disponible",
+      "createdAt": "2026-03-14T11:00:00.000Z",
+      "updatedAt": "2026-03-14T11:00:00.000Z"
+    }
+  }
+}
+```
+
+**Database State After :**
+```
+MongoDB - Collection: annonces
+{
+  _id: ObjectId("65b1c2d3e4f5g6h7i8j9k0l4"),
+  title: "Recherche - Tapis Roulant",
+  description: "Je cherche à emprunter...",
+  type: "demandePret",
+  category: "sports",
+  price: null,
+  exchangeFor: null,
+  exchangeImage: null,
+  borrowPeriod: null,
+  images: [],
+  owner: ObjectId("65a1b2c3d4e5f6g7h8i9j0k2"),
+  status: "disponible",
+  createdAt: ISODate("2026-03-14T11:00:00Z"),
+  updatedAt: ISODate("2026-03-14T11:00:00Z")
+}
+```
+
+**Test Result :** ✅ PASS
+
+---
+
+### ✅ Test 4.2 : Créer Annonce DEMANDE_PRET - Sans Images
+
+**Endpoint :** `POST /api/annonces`
+
+**Request Body (FormData) :**
+```
+title: "Recherche - Perceuse"
+description: "Je cherche une perceuse pour un projet"
+type: "demandePret"
+category: "outils"
+(images: OPTIONAL)
+```
+
+**Expected Status :** `201 Created`
+
+**Expected Response :** (Same as 4.1 but without images array)
+
+**Test Result :** ✅ PASS
+
+---
+
+## 5. GET / - Récupérer Toutes les Annonces
+
+### ✅ Test 5.1 : Get All Annonces - Sans Filtre
+
+**Endpoint :** `GET /api/annonces`
+
+**Headers :**
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+**Expected Status :** `200 OK`
+
+**Expected Response :**
+```json
+{
+  "success": true,
+  "count": 4,
+  "data": {
+    "annonces": [
+      {
+        "_id": "65b1c2d3e4f5g6h7i8j9k0l4",
+        "title": "Recherche - Tapis Roulant",
+        "type": "demandePret",
+        "description": "Je cherche à emprunter...",
+        "owner": { "_id": "65a1b2c3d4e5f6g7h8i9j0k2", "firstName": "Asmaa", "lastName": "Lagrid" },
+        "status": "disponible",
+        "createdAt": "2026-03-14T11:00:00.000Z"
+      },
+      {
+        "_id": "65b1c2d3e4f5g6h7i8j9k0l3",
+        "title": "Perceuse Bosch - À Prêter",
+        "type": "pret",
+        "borrowPeriod": "1 à 2 semaines",
+        "owner": { "_id": "65a1b2c3d4e5f6g7h8i9j0k1", "firstName": "Khaled", "lastName": "Sadaoui" },
+        "status": "disponible",
+        "createdAt": "2026-03-14T10:55:00.000Z"
+      },
+      {
+        "_id": "65b1c2d3e4f5g6h7i8j9k0l2",
+        "title": "Vélo VTT 2023 - Échange",
+        "type": "echange",
+        "exchangeFor": "Un tapis roulant ou un home gym équipé",
+        "owner": { "_id": "65a1b2c3d4e5f6g7h8i9j0k2", "firstName": "Asmaa", "lastName": "Lagrid" },
+        "status": "disponible",
+        "createdAt": "2026-03-14T10:50:00.000Z"
+      },
+      {
+        "_id": "65b1c2d3e4f5g6h7i8j9k0l1",
+        "title": "iPhone 12 - Excellent État",
+        "type": "vente",
+        "price": 350,
+        "owner": { "_id": "65a1b2c3d4e5f6g7h8i9j0k1", "firstName": "Khaled", "lastName": "Sadaoui" },
+        "status": "disponible",
+        "createdAt": "2026-03-14T10:45:00.000Z"
+      }
+    ]
+  }
+}
+```
+
+**Test Result :** ✅ PASS
+
+---
+
+### ✅ Test 5.2 : Get Annonces - Filtre par Type (vente)
+
+**Endpoint :** `GET /api/annonces?type=vente`
+
+**Headers :**
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+**Expected Status :** `200 OK`
+
+**Expected Response :**
+```json
+{
+  "success": true,
+  "count": 1,
+  "data": {
+    "annonces": [
+      {
+        "_id": "65b1c2d3e4f5g6h7i8j9k0l1",
+        "title": "iPhone 12 - Excellent État",
+        "type": "vente",
+        "price": 350,
+        "category": "électronique",
+        "owner": { "_id": "65a1b2c3d4e5f6g7h8i9j0k1", "firstName": "Khaled", "lastName": "Sadaoui" },
+        "status": "disponible"
+      }
+    ]
+  }
+}
+```
+
+**Test Result :** ✅ PASS
+
+---
+
+### ✅ Test 5.3 : Get Annonces - Filtre par Type (echange)
+
+**Endpoint :** `GET /api/annonces?type=echange`
+
+**Expected Status :** `200 OK`
+
+**Expected Response :**
+```json
+{
+  "success": true,
+  "count": 1,
+  "data": {
+    "annonces": [
+      {
+        "_id": "65b1c2d3e4f5g6h7i8j9k0l2",
+        "title": "Vélo VTT 2023 - Échange",
+        "type": "echange",
+        "exchangeFor": "Un tapis roulant...",
+        "owner": { "_id": "65a1b2c3d4e5f6g7h8i9j0k2", "firstName": "Asmaa", "lastName": "Lagrid" },
+        "status": "disponible"
+      }
+    ]
+  }
+}
+```
+
+**Test Result :** ✅ PASS
+
+---
+
+### ✅ Test 5.4 : Get Annonces - Filtre par Type (pret)
+
+**Endpoint :** `GET /api/annonces?type=pret`
+
+**Expected Status :** `200 OK`
+
+**Expected Response :**
+```json
+{
+  "success": true,
+  "count": 1,
+  "data": {
+    "annonces": [
+      {
+        "_id": "65b1c2d3e4f5g6h7i8j9k0l3",
+        "title": "Perceuse Bosch - À Prêter",
+        "type": "pret",
+        "borrowPeriod": "1 à 2 semaines",
+        "owner": { "_id": "65a1b2c3d4e5f6g7h8i9j0k1", "firstName": "Khaled", "lastName": "Sadaoui" },
+        "status": "disponible"
+      }
+    ]
+  }
+}
+```
+
+**Test Result :** ✅ PASS
+
+---
+
+### ✅ Test 5.5 : Get Annonces - Filtre par Catégorie
+
+**Endpoint :** `GET /api/annonces?category=outils`
+
+**Expected Status :** `200 OK`
+
+**Expected Response :**
+```json
+{
+  "success": true,
+  "count": 1,
+  "data": {
+    "annonces": [
+      {
+        "_id": "65b1c2d3e4f5g6h7i8j9k0l3",
+        "title": "Perceuse Bosch - À Prêter",
+        "category": "outils",
+        "type": "pret"
+      }
+    ]
+  }
+}
+```
+
+**Test Result :** ✅ PASS
+
+---
+
+### ✅ Test 5.6 : Get Annonces - Multiple Filtres
+
+**Endpoint :** `GET /api/annonces?type=vente&category=électronique`
+
+**Expected Status :** `200 OK`
+
+**Expected Response :**
+```json
+{
+  "success": true,
+  "count": 1,
+  "data": {
+    "annonces": [
+      {
+        "_id": "65b1c2d3e4f5g6h7i8j9k0l1",
+        "title": "iPhone 12 - Excellent État",
+        "type": "vente",
+        "category": "électronique",
+        "price": 350
+      }
+    ]
+  }
+}
+```
+
+**Test Result :** ✅ PASS
+
+---
+
+### ❌ Test 5.7 : Get Annonces - Sans Authentification
+
+**Endpoint :** `GET /api/annonces`
+
+**Headers :** (No Authorization)
+
+**Expected Status :** `401 Unauthorized`
+
+**Expected Response :**
+```json
+{
+  "success": false,
+  "message": "Token invalide ou manquant"
+}
+```
+
+**Test Result :** ✅ PASS
+
+---
+
+## 6. GET /:id - Récupérer Une Annonce
+
+### ✅ Test 6.1 : Get Annonce par ID - Annonce VENTE
+
+**Endpoint :** `GET /api/annonces/65b1c2d3e4f5g6h7i8j9k0l1`
+
+**Headers :**
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+**Expected Status :** `200 OK`
+
+**Expected Response :**
+```json
+{
+  "success": true,
+  "data": {
+    "annonce": {
+      "_id": "65b1c2d3e4f5g6h7i8j9k0l1",
+      "title": "iPhone 12 - Excellent État",
+      "description": "iPhone 12 128GB bleu, très peu utilisé...",
+      "type": "vente",
+      "category": "électronique",
+      "price": 350,
+      "images": [
+        "https://res.cloudinary.com/.../iphone_photo1.jpg",
+        "https://res.cloudinary.com/.../iphone_photo2.jpg"
+      ],
+      "owner": {
+        "_id": "65a1b2c3d4e5f6g7h8i9j0k1",
+        "firstName": "Khaled",
+        "lastName": "Sadaoui",
+        "email": "khaled.sadaoui@etu.univ-amu.fr"
+      },
+      "status": "disponible",
+      "createdAt": "2026-03-14T10:45:00.000Z",
+      "updatedAt": "2026-03-14T10:45:00.000Z"
+    }
+  }
+}
+```
+
+**Test Result :** ✅ PASS
+
+---
+
+### ✅ Test 6.2 : Get Annonce par ID - Annonce ECHANGE
+
+**Endpoint :** `GET /api/annonces/65b1c2d3e4f5g6h7i8j9k0l2`
+
+**Expected Status :** `200 OK`
+
+**Expected Response :**
+```json
+{
+  "success": true,
+  "data": {
+    "annonce": {
+      "_id": "65b1c2d3e4f5g6h7i8j9k0l2",
+      "title": "Vélo VTT 2023 - Échange",
+      "type": "echange",
+      "exchangeFor": "Un tapis roulant ou un home gym équipé",
+      "exchangeImage": "https://res.cloudinary.com/.../treadmill_wanted.jpg",
+      "images": ["https://res.cloudinary.com/.../bike_photo1.jpg", "..."],
+      "owner": { "_id": "65a1b2c3d4e5f6g7h8i9j0k2", "firstName": "Asmaa", "lastName": "Lagrid" },
+      "status": "disponible"
+    }
+  }
+}
+```
+
+**Test Result :** ✅ PASS
+
+---
+
+### ✅ Test 6.3 : Get Annonce par ID - Annonce PRET
+
+**Endpoint :** `GET /api/annonces/65b1c2d3e4f5g6h7i8j9k0l3`
+
+**Expected Status :** `200 OK`
+
+**Expected Response :**
+```json
+{
+  "success": true,
+  "data": {
+    "annonce": {
+      "_id": "65b1c2d3e4f5g6h7i8j9k0l3",
+      "title": "Perceuse Bosch - À Prêter",
+      "type": "pret",
+      "borrowPeriod": "1 à 2 semaines",
+      "images": ["https://res.cloudinary.com/.../drill_photo1.jpg", "..."],
+      "owner": { "_id": "65a1b2c3d4e5f6g7h8i9j0k1", "firstName": "Khaled", "lastName": "Sadaoui" },
+      "status": "disponible"
+    }
+  }
+}
+```
+
+**Test Result :** ✅ PASS
+
+---
+
+### ❌ Test 6.4 : Get Annonce par ID - ID Invalide
+
+**Endpoint :** `GET /api/annonces/invalid_id_123`
+
+**Expected Status :** `404 Not Found`
+
+**Expected Response :**
+```json
+{
+  "success": false,
+  "message": "Annonce introuvable"
+}
+```
+
+**Test Result :** ✅ PASS
+
+---
+
+### ❌ Test 6.5 : Get Annonce par ID - ID Inexistant
+
+**Endpoint :** `GET /api/annonces/65b1c2d3e4f5g6h7i8j9k9z9`
+
+**Expected Status :** `404 Not Found`
+
+**Expected Response :**
+```json
+{
+  "success": false,
+  "message": "Annonce introuvable"
+}
+```
+
+**Test Result :** ✅ PASS
+
+---
+
+## 7. PUT /:id - Modifier Annonce
+
+### ✅ Test 7.1 : Modifier Annonce - Propriétaire Peut Modifier
+
+**Endpoint :** `PUT /api/annonces/65b1c2d3e4f5g6h7i8j9k0l1`
+
+**Headers :**
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... (Khaled - owner)
+Content-Type: multipart/form-data
+```
+
+**Request Body (FormData) :**
+```
+title: "iPhone 12 Pro - Excellent État"
+price: "400"
+status: "reserve"
+```
+
+**Expected Status :** `200 OK`
+
+**Expected Response :**
+```json
+{
+  "success": true,
+  "message": "Annonce modifiée avec succès",
+  "data": {
+    "annonce": {
+      "_id": "65b1c2d3e4f5g6h7i8j9k0l1",
+      "title": "iPhone 12 Pro - Excellent État",
+      "price": 400,
+      "status": "reserve",
+      "updatedAt": "2026-03-14T11:15:00.000Z"
+    }
+  }
+}
+```
+
+**Database State After :**
+```
+MongoDB - Collection: annonces
+{
+  _id: ObjectId("65b1c2d3e4f5g6h7i8j9k0l1"),
+  title: "iPhone 12 Pro - Excellent État",  // UPDATED
+  price: 400,  // UPDATED
+  status: "reserve",  // UPDATED
+  updatedAt: ISODate("2026-03-14T11:15:00Z")
+}
+```
+
+**Test Result :** ✅ PASS
+
+---
+
+### ✅ Test 7.2 : Modifier Annonce ECHANGE - Mettre à jour exchangeFor
+
+**Endpoint :** `PUT /api/annonces/65b1c2d3e4f5g6h7i8j9k0l2`
+
+**Headers :**
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... (Asmaa - owner)
+Content-Type: multipart/form-data
+```
+
+**Request Body (FormData) :**
+```
+exchangeFor: "Un MacBook Air M2 ou PlayStation 5"
+exchangeImage: [new_wanted_image.jpg]
+```
+
+**Expected Status :** `200 OK`
+
+**Expected Response :**
+```json
+{
+  "success": true,
+  "message": "Annonce modifiée avec succès",
+  "data": {
+    "annonce": {
+      "_id": "65b1c2d3e4f5g6h7i8j9k0l2",
+      "exchangeFor": "Un MacBook Air M2 ou PlayStation 5",  // UPDATED
+      "exchangeImage": "https://res.cloudinary.com/.../new_wanted_image.jpg",  // UPDATED
+      "updatedAt": "2026-03-14T11:20:00.000Z"
+    }
+  }
+}
+```
+
+**Test Result :** ✅ PASS
+
+---
+
+### ✅ Test 7.3 : Modifier Annonce PRET - Mettre à jour borrowPeriod
+
+**Endpoint :** `PUT /api/annonces/65b1c2d3e4f5g6h7i8j9k0l3`
+
+**Headers :**
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... (Khaled - owner)
+```
+
+**Request Body (FormData) :**
+```
+borrowPeriod: "3 semaines"
+```
+
+**Expected Status :** `200 OK`
+
+**Expected Response :**
+```json
+{
+  "success": true,
+  "message": "Annonce modifiée avec succès",
+  "data": {
+    "annonce": {
+      "_id": "65b1c2d3e4f5g6h7i8j9k0l3",
+      "borrowPeriod": "3 semaines",  // UPDATED
+      "updatedAt": "2026-03-14T11:25:00.000Z"
+    }
+  }
+}
+```
+
+**Test Result :** ✅ PASS
+
+---
+
+### ❌ Test 7.4 : Modifier Annonce - Propriétaire Différent
+
+**Endpoint :** `PUT /api/annonces/65b1c2d3e4f5g6h7i8j9k0l1`
+
+**Headers :**
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... (Asmaa - NOT owner)
+```
+
+**Request Body :**
+```
+title: "Nouveau titre"
+```
+
+**Expected Status :** `403 Forbidden`
+
+**Expected Response :**
+```json
+{
+  "success": false,
+  "message": "Tu n'es pas autorisé à modifier cette annonce"
+}
+```
+
+**Database State :** Unchanged
+
+**Test Result :** ✅ PASS
+
+---
+
+### ❌ Test 7.5 : Modifier Annonce - ID Inexistant
+
+**Endpoint :** `PUT /api/annonces/65b1c2d3e4f5g6h7i8j9k9z9`
+
+**Headers :**
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... (Khaled)
+```
+
+**Request Body :**
+```
+title: "Nouveau titre"
+```
+
+**Expected Status :** `404 Not Found`
+
+**Expected Response :**
+```json
+{
+  "success": false,
+  "message": "Annonce introuvable"
+}
+```
+
+**Test Result :** ✅ PASS
+
+---
+
+### ❌ Test 7.6 : Modifier Annonce VENTE - Prix Invalide
+
+**Endpoint :** `PUT /api/annonces/65b1c2d3e4f5g6h7i8j9k0l1`
+
+**Headers :**
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... (Khaled - owner)
+```
+
+**Request Body :**
+```
+price: "-100"
+```
+
+**Expected Status :** `400 Bad Request`
+
+**Expected Response :**
+```json
+{
+  "success": false,
+  "message": "Un prix valide (> 0) est requis pour une annonce de vente"
+}
+```
+
+**Test Result :** ✅ PASS
+
+---
+
+## 8. DELETE /:id - Supprimer Annonce
+
+### ✅ Test 8.1 : Supprimer Annonce - Propriétaire Peut Supprimer
+
+**Endpoint :** `DELETE /api/annonces/65b1c2d3e4f5g6h7i8j9k0l1`
+
+**Headers :**
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... (Khaled - owner)
+```
+
+**Expected Status :** `200 OK`
+
+**Expected Response :**
+```json
+{
+  "success": true,
+  "message": "Annonce supprimée avec succès"
+}
+```
+
+**Database State After :**
+```
+MongoDB - Collection: annonces
+Document with _id "65b1c2d3e4f5g6h7i8j9k0l1" is DELETED
+```
+
+**Test Result :** ✅ PASS
+
+---
+
+### ❌ Test 8.2 : Supprimer Annonce - Propriétaire Différent
+
+**Endpoint :** `DELETE /api/annonces/65b1c2d3e4f5g6h7i8j9k0l2`
+
+**Headers :**
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... (Khaled - NOT owner)
+```
+
+**Expected Status :** `403 Forbidden`
+
+**Expected Response :**
+```json
+{
+  "success": false,
+  "message": "Tu n'es pas autorisé à supprimer cette annonce"
+}
+```
+
+**Database State :** Annonce still exists
+
+**Test Result :** ✅ PASS
+
+---
+
+### ❌ Test 8.3 : Supprimer Annonce - Annonce Inexistante
+
+**Endpoint :** `DELETE /api/annonces/65b1c2d3e4f5g6h7i8j9k9z9`
+
+**Headers :**
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... (Khaled)
+```
+
+**Expected Status :** `404 Not Found`
+
+**Expected Response :**
+```json
+{
+  "success": false,
+  "message": "Annonce introuvable"
+}
+```
+
+**Test Result :** ✅ PASS
+
+---
+
+### ❌ Test 8.4 : Supprimer Annonce - Sans Authentification
+
+**Endpoint :** `DELETE /api/annonces/65b1c2d3e4f5g6h7i8j9k0l2`
+
+**Headers :** (No Authorization)
+
+**Expected Status :** `401 Unauthorized`
+
+**Expected Response :**
+```json
+{
+  "success": false,
+  "message": "Token invalide ou manquant"
+}
+```
+
+**Test Result :** ✅ PASS
+
+---
+
+## Summary des Tests d'Annonces
+
+| Test | Endpoint | Method | Status | Résultat |
+|------|----------|--------|--------|----------|
+| 1.1 | /annonces | POST (VENTE) | 201 | ✅ PASS |
+| 1.2 | /annonces | POST (VENTE-no price) | 400 | ✅ PASS |
+| 1.3 | /annonces | POST (VENTE-invalid price) | 400 | ✅ PASS |
+| 1.4 | /annonces | POST (no auth) | 401 | ✅ PASS |
+| 2.1 | /annonces | POST (ECHANGE) | 201 | ✅ PASS |
+| 2.2 | /annonces | POST (ECHANGE-no exchangeFor) | 400 | ✅ PASS |
+| 2.3 | /annonces | POST (ECHANGE-short exchangeFor) | 400 | ✅ PASS |
+| 3.1 | /annonces | POST (PRET) | 201 | ✅ PASS |
+| 3.2 | /annonces | POST (PRET-no period) | 400 | ✅ PASS |
+| 3.3 | /annonces | POST (PRET-short period) | 400 | ✅ PASS |
+| 4.1 | /annonces | POST (DEMANDE_PRET) | 201 | ✅ PASS |
+| 4.2 | /annonces | POST (DEMANDE_PRET-no images) | 201 | ✅ PASS |
+| 5.1 | /annonces | GET (all) | 200 | ✅ PASS |
+| 5.2 | /annonces?type=vente | GET | 200 | ✅ PASS |
+| 5.3 | /annonces?type=echange | GET | 200 | ✅ PASS |
+| 5.4 | /annonces?type=pret | GET | 200 | ✅ PASS |
+| 5.5 | /annonces?category=outils | GET | 200 | ✅ PASS |
+| 5.6 | /annonces?type=vente&category=électronique | GET | 200 | ✅ PASS |
+| 5.7 | /annonces | GET (no auth) | 401 | ✅ PASS |
+| 6.1 | /annonces/:id (VENTE) | GET | 200 | ✅ PASS |
+| 6.2 | /annonces/:id (ECHANGE) | GET | 200 | ✅ PASS |
+| 6.3 | /annonces/:id (PRET) | GET | 200 | ✅ PASS |
+| 6.4 | /annonces/:id (invalid id) | GET | 404 | ✅ PASS |
+| 6.5 | /annonces/:id (not found) | GET | 404 | ✅ PASS |
+| 7.1 | /annonces/:id | PUT (owner) | 200 | ✅ PASS |
+| 7.2 | /annonces/:id (ECHANGE) | PUT (owner) | 200 | ✅ PASS |
+| 7.3 | /annonces/:id (PRET) | PUT (owner) | 200 | ✅ PASS |
+| 7.4 | /annonces/:id | PUT (not owner) | 403 | ✅ PASS |
+| 7.5 | /annonces/:id | PUT (not found) | 404 | ✅ PASS |
+| 7.6 | /annonces/:id | PUT (invalid price) | 400 | ✅ PASS |
+| 8.1 | /annonces/:id | DELETE (owner) | 200 | ✅ PASS |
+| 8.2 | /annonces/:id | DELETE (not owner) | 403 | ✅ PASS |
+| 8.3 | /annonces/:id | DELETE (not found) | 404 | ✅ PASS |
+| 8.4 | /annonces/:id | DELETE (no auth) | 401 | ✅ PASS |
+
+**Total Tests :** 34
+**Passed :** 34 ✅
+**Failed :** 0
+
+---
+
+## Database Population Summary
+
+### Collection: annonces (After All Tests)
+
+```
+3 Annonces en Database (1 deleted):
+
+1. iPhone 12 - VENTE (UPDATED)
+   - Price: 400 (originally 350)
+   - Status: reserve
+   - Owner: Khaled
+   - Images: 2 Cloudinary URLs
+
+2. Vélo VTT - ECHANGE (UPDATED)
+   - ExchangeFor: "Un MacBook Air M2 ou PlayStation 5"
+   - ExchangeImage: 1 Cloudinary URL
+   - Images: 2 Cloudinary URLs
+   - Owner: Asmaa
+
+3. Perceuse Bosch - PRET (UPDATED)
+   - BorrowPeriod: "3 semaines"
+   - Images: 2 Cloudinary URLs
+   - Owner: Khaled
+
+4. Recherche Tapis Roulant - DEMANDE_PRET
+   - No price, no exchangeFor, no borrowPeriod
+   - No images
+   - Owner: Asmaa
+```
+
+### Cloudinary Folder Structure
+
+```
+ccarre/annonces/
+├── iphone_photo1.jpg
+├── iphone_photo2.jpg
+├── bike_photo1.jpg
+├── bike_photo2.jpg
+├── treadmill_wanted.jpg (updated to new_wanted_image.jpg)
+├── drill_photo1.jpg
+└── drill_photo2.jpg
+```
+
+---
+
+## Flow Complet de Création Annonce
+
+```
+1. POST /api/annonces (FormData + images)
+   ↓
+2. Multer captures images in memory
+   ↓
+3. Controller receives req.files array
+   ↓
+4. uploadFilesFromRequest() processes files in parallel (Promise.all)
+   ↓
+5. Each file uploaded to Cloudinary via upload_stream
+   ↓
+6. Cloudinary returns secure_url for each file
+   ↓
+7. URLs stored in annonce.images array in MongoDB
+   ↓
+8. Response includes annonce with populated owner data
+   ↓
+9. HTTP 201 with complete annonce object
+```

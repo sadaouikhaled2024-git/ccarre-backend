@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Confirmation de compte - CCarré</title>
+</head>
+<body style="margin:0; padding:0; background-color:#FEFEFF; font-family: Arial, Helvetica, sans-serif;">
+
+  <table align="center" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px; margin:40px auto; background-color:#FFFFFF; border-radius:12px; box-shadow:0 4px 20px rgba(0,0,0,0.05); overflow:hidden;">
+    
+    <!-- Header -->
+    <tr>
+      <td style="background-color:#B44362; padding:24px; text-align:center;">
+        <h1 style="color:#FEFEFF; margin:0; font-size:24px;">CCarré</h1>
+        <p style="color:#EC7578; margin:5px 0 0 0; font-size:14px;">
+          Plateforme d'échange entre étudiants AMU
+        </p>
+      </td>
+    </tr>
+
+    <!-- Body -->
+    <tr>
+      <td style="padding:32px; color:#1F0C11;">
+        
+        <h2 style="margin-top:0; font-size:20px;">
+          Confirme ton adresse email
+        </h2>
+
+        <p style="font-size:15px; line-height:1.6;">
+          Salut <strong>{{FIRST_NAME}}</strong>, merci de t'être inscrit sur <strong>CCarré</strong> !
+          Pour activer ton compte, entre le code de confirmation ci-dessous dans l'application.
+        </p>
+
+        <!-- Code -->
+        <table align="center" cellpadding="0" cellspacing="0" style="margin:30px auto;">
+          <tr>
+            <td align="center" style="background-color:#F5F5F5; border:2px dashed #B44362; border-radius:12px; padding:20px 40px;">
+              <span style="font-size:32px; font-weight:bold; letter-spacing:8px; color:#B44362; font-family:'Courier New', monospace;">
+                {{CONFIRMATION_CODE}}
+              </span>
+            </td>
+          </tr>
+        </table>
+
+        <p style="font-size:14px; color:#555555; line-height:1.5; text-align:center;">
+          Entre ce code à 8 chiffres pour confirmer ton compte.
+        </p>
+
+        <p style="margin-top:30px; font-size:13px; color:#777;">
+          Ce code expirera dans 24 heures pour des raisons de sécurité.
+          Si tu n'as pas créé de compte, ignore cet email.
+        </p>
+
+      </td>
+    </tr>
+
+    <!-- Footer -->
+    <tr>
+      <td style="background-color:#1F0C11; padding:20px; text-align:center;">
+        <p style="margin:0; font-size:12px; color:#FEFEFF;">
+          &copy; 2026 CCarré &mdash; Réservé aux étudiants @etu.univ-amu.fr
+        </p>
+      </td>
+    </tr>
+
+  </table>
+
+</body>
+</html>
